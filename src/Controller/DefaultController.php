@@ -48,6 +48,33 @@ class DefaultController extends Controller
     }
 
     /**
+     * Matches /weather exactly
+     *
+     * @Route("/weather", name="default_weather")
+     */
+    public function weather()
+    {
+    	$request = Request::createFromGlobals();
+    	$location = $request->request->get('id');
+
+    	$city = $this->getDoctrine()->getRepository(City::class);
+    	$query = $city->createQueryBuilder('c')
+    		->where('c.id = :id')
+    		->setParameter('id', $location)
+    		->orderBy('c.placeName')
+    		->setMaxResults(1)
+    		->getQuery();
+    	$result = $query->getOneOrNullResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+
+    	$weather = ApiController::open_weather($result['placeName']);
+    	$weather = json_decode($weather);
+
+    	return $this->render('weather.html.twig', array(
+    		'weather' => $weather
+    	));
+    }
+
+    /**
      * Matches /map exactly
      *
      * @Route("/map", name="default_map")

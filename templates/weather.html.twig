@@ -1,0 +1,32 @@
+<table class="table table-striped table-bordered" id="table_weather">
+	<tbody>
+		<tr>
+			<td>Weather</td>
+			<td>: {{ weather.weather[0].main }} - {{ weather.weather[0].description }}</td>
+		</tr>
+		<tr>
+			<td>Temperature</td>
+			<td>: {{ weather.main.temp - 274.15 }} C</td>
+		</tr>
+		<tr>
+			<td>Pressure</td>
+			<td>: {{ weather.main.pressure }} hPa</td>
+		</tr>
+		<tr>
+			<td>Humidity</td>
+			<td>: {{ weather.main.humidity }} %</td>
+		</tr>
+		<tr>
+			<td>Wind Speed</td>
+			<td>: {{ weather.wind.speed }} meter/sec</td>
+		</tr>
+		<tr>
+			<td>City Name</td>
+			<td>: {{ weather.name }}</td>
+		</tr>
+		<tr>
+			<td>Country Code</td>
+			<td>: {{ weather.sys.country }}</td>
+		</tr>
+	</tbody>
+</table>

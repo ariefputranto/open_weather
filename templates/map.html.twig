@@ -96,7 +96,7 @@
 	});
 	marker_{{ item.id }}.addListener('click', function(e) {
 		$(".modal-header .modal-title").text(this.title);
-		$(".modal-body #modalLatLng").text(this.position);
+		$(".modal-body").load('{{ url('default_weather') }}', { 'id':{{ item.id }} });
 		$('#modal').modal('show');
 	});
 	{% endfor %}

@@ -18,11 +18,11 @@ class ApiController
 		return $resp;
 	}
 
-    public function open_weather($location)
+    public function open_weather($name)
     {
     	$result = json_encode([]);
-        if (!empty($location)) {
-	    	$url = "http://api.openweathermap.org/data/2.5/weather?q=".$location."&appid=e0fcfb15632a36e208c687d787e76d27";
+        if (!empty($name)) {
+	    	$url = "http://api.openweathermap.org/data/2.5/weather?q=".$name.",au&appid=e0fcfb15632a36e208c687d787e76d27";
 	    	$result = self::getData($url);
         }
 
