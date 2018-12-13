@@ -49,6 +49,24 @@
 			</div>
 		</div>
 	</div>
+	<div class="modal fade" id="modal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	  <div class="modal-dialog" role="document">
+	    <div class="modal-content">
+	      <div class="modal-header">
+	        <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+	        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+	          <span aria-hidden="true">&times;</span>
+	        </button>
+	      </div>
+	      <div class="modal-body"></div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+	        <button type="button" class="btn btn-primary">Save changes</button>
+	      </div>
+	    </div>
+	  </div>
+	</div>
+	<button id="btn_modal">modal</button>
 {% endblock %}
 
 {% block javascripts %}
@@ -62,11 +80,27 @@
   var map;
   var lat = {{ current_loc['latitude'] }};
   var long = {{ current_loc['longitude'] }};
+  var marker;
+
   function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
       center: {lat: lat, lng: long},
       zoom: 8
     });
+
+	{% for item in marker %}
+	var marker_{{ item.id }} = new google.maps.Marker({
+		position: new google.maps.LatLng({{ item.latitude }}, {{ item.longitude }}),
+		map: map,
+		title: '{{ item.placeName }}'
+	});
+	marker_{{ item.id }}.addListener('click', function(e) {
+		$(".modal-header .modal-title").text(this.title);
+		$(".modal-body #modalLatLng").text(this.position);
+		$('#modal').modal('show');
+	});
+	{% endfor %}
+
   }
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCo-tBCK0QMFP5pr7wmLd8ux9PDNmze2P0&callback=initMap"
