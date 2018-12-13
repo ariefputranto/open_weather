@@ -3,9 +3,10 @@ namespace App\Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-use App\Controller\ApiController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use App\Controller\ApiController;
+use App\Entity\City;
 
 class DefaultController extends Controller
 {
@@ -25,14 +26,25 @@ class DefaultController extends Controller
      *
      * @Route("/city", name="default_searchCity")
      */
-    public function searchCity(Request $request)
+    public function searchCity()
     {
-    	var_dump ($request);
-    	die();
-        $number = random_int(0, 100);
-        $result = ApiController::open_weather('kediri');
-        var_dump (json_decode($result));
-        die();
+    	$request = Request::createFromGlobals();
+    	$city_name = $request->query->get('l');
+
+    	$city = $this->getDoctrine()->getRepository(City::class);
+    	$query = $city->createQueryBuilder('c')
+    		->where('lower(c.placeName) like :city_name')
+    		->setParameter('city_name','%'.strtolower($city_name).'%')
+    		->orderBy('c.placeName')
+    		->setMaxResults(10)
+    		->getQuery();
+    	$result = $query->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+
+    	$response = new Response();
+		$response->setContent(json_encode($result));
+		$response->headers->set('Content-Type', 'application/json');
+
+		return $response;
     }
 
     /**
