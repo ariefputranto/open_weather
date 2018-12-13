@@ -5,7 +5,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class ApiController
 {
-	public function getData($url)
+	private function getData($url)
 	{
 		$curl = curl_init();
 		curl_setopt_array($curl, array(
@@ -17,6 +17,7 @@ class ApiController
 		curl_close($curl);
 		return $resp;
 	}
+
     public function open_weather($location)
     {
     	$result = json_encode([]);
@@ -27,4 +28,16 @@ class ApiController
 
         return $result;
     }
+
+    public function getCity($city_name)
+    {
+    	$result = json_encode([]);
+        if (!empty($location)) {
+	    	$url = "https://maps.googleapis.com/maps/api/place/autocomplete/json?input=".$city_name."&types=(cities)&key=AIzaSyBmqe7AJP83sQpPrXOnxiG4zWiHqrgGTVs";
+	    	$result = self::getData($url);
+        }
+
+        return $result;
+    }
+
 }
