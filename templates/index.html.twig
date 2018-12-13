@@ -3,9 +3,16 @@
 {% block title %}Home{% endblock %}
 
 {% block stylesheets %}
+<link rel="stylesheet" type="text/css" href="css/select2.min.css">
 <style type="text/css">
 	.m-t-10{
 		margin-top: 10px;
+	}
+	.p-t-0{
+		padding-top: 0;
+	}
+	.p-b-3{
+		padding-bottom: 3px;
 	}
 </style>
 {% endblock %}
@@ -20,13 +27,13 @@
 				<div class="card card-body bg-light">
 					<div class="form-group row">
 						<div class="col-lg-8">
-							<label for="location">Select Location</label>
-						    <input type="text" class="form-control" name="location" id="location" aria-describedby="locationHelp" placeholder="Enter Location" required="required">
+							<label for="location">Search Location</label>
+							<select class="form-control js-data-example-ajax" name="location" id="location" aria-describedby="locationHelp" required="required"></select>
 						    <small id="locationHelp" class="form-text text-muted">Please fill location first before search</small>
 						</div>
 						<div class="col-lg-4">
 							<label for="radius">Set Radius Distance</label>
-						    <input type="text" class="form-control" name="radius" id="radius" aria-describedby="locationHelp" placeholder="1" required="required">
+						    <input type="text" class="form-control p-b-3 p-t-0" name="radius" id="radius" aria-describedby="locationHelp" placeholder="1" required="required">
 						</div>
 						<div class="col-lg-12 m-t-10">
 						  <button type="submit" class="btn btn-primary">Search</button>
@@ -39,20 +46,35 @@
 {% endblock %}
 
 {% block javascripts %}
+<script src="js/select2.min.js"></script>
 <script>
 	$(document).ready(function() {
-		$('body').on('change', '#location', function(){
-			var value = $(this).val();
-			if (value.length > 3) {
-				$.ajax({
-					url: '{{ url('default_searchCity') }}'+'?l='+value, 
-					success:function(data){
-						console.log(data);
-						data = JSON.parse(data);
-						console.log(data);
-					}
-				});
-			}
+		$('.js-data-example-ajax').select2({
+			placeholder: 'Search location',
+		    minimumInputLength: 3,
+			ajax: {
+				url: '{{ url('default_searchCity') }}',
+		        dataType: 'json',
+		        type: "GET",
+		        quietMillis: 50,
+				data: function (params) {
+				  var query = {
+				    search: params.term
+				  }
+				  return query;
+				},
+				processResults: function (data) {
+					console.log(data);
+		            return {
+		                results: $.map(data, function (item) {
+		                    return {
+		                        text: item.postcode+" - "+item.placeName,
+		                        id: item.postcode
+		                    }
+		                })
+		            };
+		        }
+			},
 		});
 	});
 </script>

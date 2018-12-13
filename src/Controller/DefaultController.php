@@ -29,7 +29,7 @@ class DefaultController extends Controller
     public function searchCity()
     {
     	$request = Request::createFromGlobals();
-    	$city_name = $request->query->get('l');
+    	$city_name = $request->query->get('search');
 
     	$city = $this->getDoctrine()->getRepository(City::class);
     	$query = $city->createQueryBuilder('c')
@@ -39,6 +39,14 @@ class DefaultController extends Controller
     		->setMaxResults(10)
     		->getQuery();
     	$result = $query->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+
+    	// $result = [];
+    	// foreach ($tmp as $key => $val) {
+    	// 	$result[$key] = json_encode([
+    	// 		'id' => $val['postcode'],
+    	// 		'text' => $val['placeName']
+    	// 	]);
+    	// }
 
     	$response = new Response();
 		$response->setContent(json_encode($result));
