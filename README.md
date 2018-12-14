@@ -1,5 +1,5 @@
 # open_weather
-search weather in various area
+search weather in various area and focused in australia
 
 How to use :
 1. create database with name 'openweather' using postgres
