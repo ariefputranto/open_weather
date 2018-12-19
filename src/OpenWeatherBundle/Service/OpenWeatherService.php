@@ -2,25 +2,18 @@
 
 namespace OpenWeatherBundle\Service;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Doctrine\ORM\EntityManagerInterface;
 use OpenWeatherBundle\Service\ApiService;
 use OpenWeatherBundle\Entity\City;
+use Doctrine\ORM\Query;
 
-class OpenWeatherService extends Controller
+class OpenWeatherService
 {
+    private $city_name, $location, $radius, $entityManager;
 
-    // public function indexAction()
-    // {
-    //     return $this->render('OpenWeatherBundle:Default:index.html.twig');
-    // }
-    private $city_name, $location, $radius;
-
-    public function __construct()
+    public function __construct(EntityManagerInterface $entityManager)
     {
-        $city_name = '';
-        $location = '';
-        $radius = 0;
+        $this->entityManager = $entityManager;
     }
 
     public function setCity($city_name)
@@ -55,45 +48,43 @@ class OpenWeatherService extends Controller
 
     public function searchCity()
     {
-        $city = $this->getDoctrine()->getRepository(City::class);
+        $city = $this->entityManager->getRepository(City::class);
         $query = $city->createQueryBuilder('c')
             ->where('lower(c.placeName) like :city_name')
             ->setParameter('city_name','%'.strtolower($this->city_name).'%')
             ->orderBy('c.placeName')
             ->setMaxResults(10)
             ->getQuery();
-        $result = $query->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+        $result = $query->getResult(Query::HYDRATE_ARRAY);
 
-        return new JsonResponse(['data' => $result]);
+        return json_encode(['data' => $result]);
     }
 
     public function searchLocation()
     {
-    	$city = $this->getDoctrine()->getRepository(City::class);
+    	$city = $this->entityManager->getRepository(City::class);
         $query = $city->createQueryBuilder('c')
             ->where('c.id = :id')
             ->setParameter('id', $this->location)
             ->orderBy('c.placeName')
             ->setMaxResults(1)
             ->getQuery();
-        $result = $query->getOneOrNullResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+        $result = $query->getOneOrNullResult(Query::HYDRATE_ARRAY);
 
         $weather = ApiService::open_weather($result['placeName']);
 
-        $response = new JsonResponse();
-
-        return JsonResponse::fromJsonString($weather);
+        return $weather;
     }
 
     public function generateMap()
     {
-    	$city = $this->getDoctrine()->getRepository(City::class);
+    	$city = $this->entityManager->getRepository(City::class);
         $query = $city->createQueryBuilder('c')
             ->where('c.id != :id')
             ->setParameter('id', $this->location)
             ->orderBy('c.placeName')
             ->getQuery();
-        $result_all = $query->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+        $result_all = $query->getResult(Query::HYDRATE_ARRAY);
 
         $query = $city->createQueryBuilder('c')
             ->where('c.id = :id')
@@ -101,7 +92,7 @@ class OpenWeatherService extends Controller
             ->orderBy('c.placeName')
             ->setMaxResults(1)
             ->getQuery();
-        $result_current_location = $query->getOneOrNullResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+        $result_current_location = $query->getOneOrNullResult(Query::HYDRATE_ARRAY);
 
         $marker = [];
         foreach ($result_all as $key => $val) {
@@ -113,7 +104,7 @@ class OpenWeatherService extends Controller
 
         $result = ['result' => $result_current_location, 'marker' => $marker];
 
-        return new JsonResponse($result);
+        return json_encode($result);
     }
 
     private function haversineGreatCircleDistance($latitude_from, $longitude_from, $latitude_to, $longitude_to, $earth_radius = 6371)

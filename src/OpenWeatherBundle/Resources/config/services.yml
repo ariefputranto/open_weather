@@ -1,11 +1,4 @@
-parameters:
-  city_name: ''
-  location: ''
-  radius: 0
-
 services:
     open_weather.example:
         class: OpenWeatherBundle\Service\OpenWeatherService
-        arguments: ["%city_name%","%location%","%radius%"]
-        calls:
-            - [setContainer, ["@service_container"]]
+        arguments: ["@doctrine.orm.openweather_entity_manager"]
