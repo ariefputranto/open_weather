@@ -64,7 +64,7 @@
                   return query;
                 },
                 processResults: function (data) {
-                    console.log(data);
+                    data = data.data;
                     return {
                         results: $.map(data, function (item) {
                             return {

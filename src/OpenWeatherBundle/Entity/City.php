@@ -1,6 +1,6 @@
 <?php
 
-namespace AppBundle\Entity;
+namespace OpenWeatherBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 

@@ -1,3 +1,7 @@
+open_weather:
+    resource: "@OpenWeatherBundle/Service/"
+    type:     annotation
+
 app:
     resource: '@AppBundle/Controller/'
     type: annotation

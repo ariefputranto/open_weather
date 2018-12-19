@@ -1,9 +1,7 @@
 <?php
-namespace AppBundle\Controller;
+namespace OpenWeatherBundle\Service;
 
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-
-class ApiController extends Controller
+class ApiService
 {
 	private function getData($url)
 	{

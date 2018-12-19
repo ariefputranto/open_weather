@@ -22,22 +22,16 @@ class DefaultController extends Controller
     /**
      * @Route("/city", name="default_searchCity")
      */
-    public function searchCity()
+    public function searchCity(Request $request)
     {
-        $request = Request::createFromGlobals();
         $city_name = $request->query->get('search');
 
-        $city = $this->getDoctrine()->getRepository(City::class);
-        $query = $city->createQueryBuilder('c')
-            ->where('lower(c.placeName) like :city_name')
-            ->setParameter('city_name','%'.strtolower($city_name).'%')
-            ->orderBy('c.placeName')
-            ->setMaxResults(10)
-            ->getQuery();
-        $result = $query->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
+        $open_weather = $this->get('open_weather.example');
+        $open_weather->setCity($city_name);
+        $result = $open_weather->searchCity();
+        $result = $result->getContent();
 
-        $response = new Response();
-        $response->setContent(json_encode($result));
+        $response = new Response($result);
         $response->headers->set('Content-Type', 'application/json');
 
         return $response;
@@ -46,22 +40,14 @@ class DefaultController extends Controller
     /**
      * @Route("/weather", name="default_weather")
      */
-    public function weather()
+    public function weather(Request $request)
     {
-        $request = Request::createFromGlobals();
         $location = $request->request->get('id');
 
-        $city = $this->getDoctrine()->getRepository(City::class);
-        $query = $city->createQueryBuilder('c')
-            ->where('c.id = :id')
-            ->setParameter('id', $location)
-            ->orderBy('c.placeName')
-            ->setMaxResults(1)
-            ->getQuery();
-        $result = $query->getOneOrNullResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
-
-        $weather = ApiController::open_weather($result['placeName']);
-        $weather = json_decode($weather);
+        $open_weather = $this->get('open_weather.example');
+        $open_weather->setLocation($location);
+        $weather = $open_weather->searchLocation();
+        $weather = json_decode($weather->getContent());
 
         return $this->render('default/weather.html.twig', array(
             'weather' => $weather
@@ -71,39 +57,20 @@ class DefaultController extends Controller
     /**
      * @Route("/map", name="default_map")
      */
-    public function map()
+    public function map(Request $request)
     {
-        $request = Request::createFromGlobals();
         $location = $request->query->get('location');
         $radius = $request->query->get('radius');
 
-        $city = $this->getDoctrine()->getRepository(City::class);
-        $query = $city->createQueryBuilder('c')
-            ->where('c.id != :id')
-            ->setParameter('id', $location)
-            ->orderBy('c.placeName')
-            ->getQuery();
-        $result_all = $query->getResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
-
-        $query = $city->createQueryBuilder('c')
-            ->where('c.id = :id')
-            ->setParameter('id', $location)
-            ->orderBy('c.placeName')
-            ->setMaxResults(1)
-            ->getQuery();
-        $result_current_location = $query->getOneOrNullResult(\Doctrine\ORM\Query::HYDRATE_ARRAY);
-
-        $marker = [];
-        foreach ($result_all as $key => $val) {
-            $distance = self::haversineGreatCircleDistance($val['latitude'],$val['longitude'],$result_current_location['latitude'], $result_current_location['longitude']);
-            if ($distance <= $radius) {
-                $marker []= $val;
-            }
-        }
+        $open_weather = $this->get('open_weather.example');
+        $open_weather->setLocation($location);
+        $open_weather->setRadius($radius);        
+        $result = $open_weather->generateMap();
+        $result = json_decode($result->getContent());
 
         return $this->render('default/map.html.twig', array(
-            'marker' => $marker,
-            'current_loc' => $result_current_location
+            'marker' => $result->marker,
+            'current_loc' => $result->result
         ));
     }
 
