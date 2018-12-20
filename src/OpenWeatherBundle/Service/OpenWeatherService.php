@@ -3,7 +3,6 @@
 namespace OpenWeatherBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
-use OpenWeatherBundle\Service\ApiService;
 use OpenWeatherBundle\Entity\City;
 use Doctrine\ORM\Query;
 
@@ -71,7 +70,7 @@ class OpenWeatherService
             ->getQuery();
         $result = $query->getOneOrNullResult(Query::HYDRATE_ARRAY);
 
-        $weather = ApiService::open_weather($result['placeName']);
+        $weather = self::open_weather_api($result['placeName']);
 
         return $weather;
     }
@@ -105,6 +104,30 @@ class OpenWeatherService
         $result = ['result' => $result_current_location, 'marker' => $marker];
 
         return json_encode($result);
+    }
+
+    private function getData($url)
+    {
+        $curl = curl_init();
+        curl_setopt_array($curl, array(
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_URL => $url,
+            CURLOPT_USERAGENT => 'desktop'
+        ));
+        $resp = curl_exec($curl);
+        curl_close($curl);
+        return $resp;
+    }
+
+    private function open_weather_api($name)
+    {
+        $result = json_encode([]);
+        if (!empty($name)) {
+            $url = "http://api.openweathermap.org/data/2.5/weather?q=".$name.",au&appid=e0fcfb15632a36e208c687d787e76d27";
+            $result = self::getData($url);
+        }
+
+        return $result;
     }
 
     private function haversineGreatCircleDistance($latitude_from, $longitude_from, $latitude_to, $longitude_to, $earth_radius = 6371)
